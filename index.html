@@ -866,7 +866,7 @@
       display: flex;
       gap: 20px;
       width: max-content;
-      animation: galleryScroll 90s linear infinite;
+      animation: none;
       padding-bottom: 8px;
     }
     .gallery-track:hover { animation-play-state: paused; }
@@ -2293,28 +2293,21 @@
     if (!wrapper || !track) return;
     _galInited = true;
 
-    let isDragging       = false;
-    let startX           = 0;
+    let isDragging        = false;
+    let startX            = 0;
     let offsetAtDragStart = 0;
-    let animOffset       = 0;
-    let lastTimestamp    = null;
-    const SPEED          = 0.12;
+    let animOffset        = 0;
 
     track.style.animation  = 'none';
     track.style.willChange = 'transform';
+    track.style.transform  = 'translateX(0)';
 
     function getHalfWidth() { return track.scrollWidth / 2; }
     function normalize(v)   { const hw = getHalfWidth(); return ((v % hw) + hw) % hw; }
 
-    function animate(ts) {
-      if (!isDragging) {
-        if (lastTimestamp !== null) animOffset += (ts - lastTimestamp) * SPEED;
-        lastTimestamp = ts;
-      } else { lastTimestamp = null; }
+    function applyOffset() {
       track.style.transform = `translateX(-${normalize(animOffset)}px)`;
-      requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
 
     function getClientX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
 
@@ -2328,10 +2321,11 @@
     function onMove(e) {
       if (!isDragging) return;
       animOffset = offsetAtDragStart - (getClientX(e) - startX);
+      applyOffset();
     }
     window.addEventListener('mousemove', onMove);
     window.addEventListener('touchmove', onMove, { passive: true });
-    function stopDrag() { isDragging = false; wrapper.classList.remove('dragging'); lastTimestamp = null; }
+    function stopDrag() { isDragging = false; wrapper.classList.remove('dragging'); }
     window.addEventListener('mouseup', stopDrag);
     window.addEventListener('touchend', stopDrag);
   }
