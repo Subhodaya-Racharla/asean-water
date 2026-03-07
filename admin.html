@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Asean Admin Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue:  #0A2463; --cyan: #00B4D8; --green: #22c55e;
+      --red:   #ef4444; --off: #f4f8ff; --gray: #64748b;
+      --radius: 14px; --shadow: 0 4px 24px rgba(10,36,99,0.10);
+    }
+    body { font-family: 'Inter', sans-serif; background: #f0f4ff; color: #1e293b; min-height: 100vh; }
+    h1,h2,h3 { font-family: 'Poppins', sans-serif; }
+    a { color: var(--cyan); }
+
+    /* ── LOGIN SCREEN ── */
+    #s-login {
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; padding: 24px;
+      background: linear-gradient(135deg, #030e2e, #0A2463, #0e5e8a);
+    }
+    .login-box {
+      background: white; border-radius: 24px; padding: 40px 32px;
+      max-width: 380px; width: 100%; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .login-logo { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 900; color: var(--blue); }
+    .login-logo span { color: var(--cyan); }
+    .login-box h2 { font-size: 1.2rem; color: var(--blue); margin: 8px 0 4px; }
+    .login-box p  { font-size: 0.85rem; color: var(--gray); margin-bottom: 28px; }
+    .login-box input {
+      width: 100%; padding: 14px 18px; border: 2px solid #d4e4ff; border-radius: 10px;
+      font-size: 1rem; font-family: 'Inter', sans-serif; outline: none; margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--cyan); }
+    .login-box .btn-login {
+      width: 100%; padding: 14px; background: var(--cyan); color: white;
+      border: none; border-radius: 50px; font-family: 'Poppins', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .login-box .btn-login:hover { background: #48CAE4; transform: translateY(-1px); }
+    .login-error { color: var(--red); font-size: 0.85rem; margin-top: 10px; display: none; }
+
+    /* ── DASHBOARD ── */
+    #s-dash { display: none; }
+
+    .dash-header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--blue); padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(10,36,99,0.3);
+    }
+    .dash-logo { font-family: 'Poppins', sans-serif; font-size: 1.3rem; font-weight: 900; color: white; }
+    .dash-logo span { color: var(--cyan); }
+    .btn-deploy {
+      background: var(--green); color: white; border: none; border-radius: 50px;
+      padding: 10px 22px; font-family: 'Poppins', sans-serif; font-weight: 700;
+      font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px;
+      transition: transform 0.2s, background 0.2s; white-space: nowrap;
+    }
+    .btn-deploy:hover { background: #16a34a; transform: translateY(-1px); }
+    .btn-deploy:disabled { background: var(--gray); cursor: not-allowed; transform: none; }
+
+    .dash-content { max-width: 720px; margin: 0 auto; padding: 20px 16px 80px; }
+
+    /* ── PROGRESS ── */
+    .progress-card {
+      background: white; border-radius: var(--radius); padding: 20px;
+      margin-bottom: 20px; box-shadow: var(--shadow);
+    }
+    .progress-card h3 { font-size: 1rem; color: var(--blue); margin-bottom: 12px; }
+    .progress-bar-wrap { background: #e2e8f0; border-radius: 50px; height: 10px; margin-bottom: 6px; }
+    .progress-bar-fill { height: 10px; border-radius: 50px; background: linear-gradient(90deg, var(--cyan), var(--green)); transition: width 0.5s ease; }
+    .progress-text { font-size: 0.82rem; color: var(--gray); margin-bottom: 16px; }
+    .checklist { display: flex; flex-direction: column; gap: 6px; max-height: 260px; overflow-y: auto; }
+    .check-item {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.83rem; padding: 6px 8px; border-radius: 8px;
+    }
+    .check-item.done { color: #166534; background: #f0fdf4; }
+    .check-item.pending { color: #92400e; background: #fffbeb; }
+    .check-icon { font-size: 1rem; flex-shrink: 0; }
+
+    /* ── SECTION CARDS ── */
+    .section-card {
+      background: white; border-radius: var(--radius);
+      padding: 24px 20px; margin-bottom: 20px; box-shadow: var(--shadow);
+    }
+    .section-card h2 { font-size: 1.1rem; color: var(--blue); margin-bottom: 6px; }
+    .section-card > p { font-size: 0.85rem; color: var(--gray); margin-bottom: 18px; line-height: 1.6; }
+
+    /* ── FORM FIELDS ── */
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--blue); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-family: 'Poppins', sans-serif; }
+    .field input, .field textarea, .field select {
+      width: 100%; padding: 11px 14px; border: 1.5px solid #d4e4ff;
+      border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem;
+      color: #1e293b; background: #f9fbff; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus, .field textarea:focus {
+      border-color: var(--cyan); background: white;
+      box-shadow: 0 0 0 3px rgba(0,180,216,0.12);
+    }
+    .field textarea { resize: vertical; min-height: 100px; }
+    .field .hint { font-size: 0.75rem; color: var(--gray); margin-top: 5px; line-height: 1.5; }
+
+    /* ── GALLERY GRID ── */
+    .gallery-upload-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    @media (min-width: 500px) { .gallery-upload-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .upload-card {
+      border: 2px solid #e2e8f0; border-radius: var(--radius);
+      overflow: hidden; transition: border-color 0.2s;
+    }
+    .upload-card.has-media { border-color: var(--green); }
+
+    .upload-preview {
+      width: 100%; height: 110px; background: linear-gradient(135deg, var(--blue), #0e5e8a);
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .upload-preview img, .upload-preview video {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .placeholder-thumb { text-align: center; padding: 8px; }
+    .placeholder-thumb span { font-size: 1.8rem; display: block; }
+    .placeholder-thumb p { font-size: 0.6rem; color: rgba(255,255,255,0.75); margin-top: 4px; line-height: 1.3; }
+
+    .upload-card-body { padding: 8px 10px 10px; }
+    .upload-caption { font-size: 0.75rem; font-weight: 600; font-family: 'Poppins', sans-serif; color: var(--blue); margin-bottom: 2px; }
+    .upload-sub { font-size: 0.68rem; color: var(--gray); margin-bottom: 8px; }
+
+    .btn-upload {
+      display: block; width: 100%; padding: 7px 0; background: var(--off);
+      border: 1.5px dashed #94a3b8; border-radius: 8px; color: var(--blue);
+      font-family: 'Poppins', sans-serif; font-size: 0.72rem; font-weight: 600;
+      cursor: pointer; text-align: center; transition: all 0.2s;
+    }
+    .btn-upload:hover { background: #e8f4ff; border-color: var(--cyan); }
+    .btn-upload.has-file { border-style: solid; border-color: var(--green); color: #166534; background: #f0fdf4; }
+    .btn-upload input { display: none; }
+
+    .btn-remove {
+      display: block; width: 100%; margin-top: 4px; padding: 5px 0;
+      background: none; border: none; color: var(--red); font-size: 0.7rem;
+      cursor: pointer; font-family: 'Inter', sans-serif; text-align: center;
+    }
+    .btn-remove:hover { text-decoration: underline; }
+
+    /* ── MAP INSTRUCTIONS ── */
+    .map-steps {
+      background: #f0f9ff; border-radius: 10px; padding: 14px 16px;
+      margin-bottom: 14px; border-left: 3px solid var(--cyan);
+    }
+    .map-steps p { font-size: 0.82rem; font-weight: 600; color: var(--blue); margin-bottom: 8px; }
+    .map-steps ol { padding-left: 18px; }
+    .map-steps li { font-size: 0.8rem; color: var(--gray); margin-bottom: 4px; line-height: 1.5; }
+
+    /* ── SAVE FOOTER ── */
+    .save-footer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #e2e8f0;
+      padding: 12px 20px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+      box-shadow: 0 -4px 20px rgba(10,36,99,0.08); z-index: 99;
+    }
+    .save-footer .btn-deploy { width: 100%; max-width: 400px; justify-content: center; padding: 14px; font-size: 1rem; }
+    .save-footer p { font-size: 0.72rem; color: var(--gray); }
+
+    /* ── LOGOUT ── */
+    .logout-btn {
+      background: none; border: 1px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7);
+      border-radius: 50px; padding: 6px 14px; font-size: 0.75rem; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all 0.2s;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+    /* ── TOAST ── */
+    #toast {
+      display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+      padding: 12px 24px; border-radius: 50px; font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem; font-weight: 600; z-index: 9999;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2); white-space: nowrap;
+      max-width: calc(100vw - 40px); text-align: center; white-space: normal;
+    }
+    #toast.info    { background: var(--blue); color: white; }
+    #toast.success { background: var(--green); color: white; }
+    #toast.error   { background: var(--red);   color: white; }
+
+    /* ── LOADING SPINNER ── */
+    .spinner {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4); border-top-color: white;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── SECTION DIVIDER ── */
+    .section-icon { font-size: 1.4rem; margin-right: 6px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════════ -->
+<div id="s-login">
+  <div class="login-box">
+    <div class="login-logo">Asean<span>.</span></div>
+    <h2>Website Admin Panel</h2>
+    <p>Enter your password to manage photos, social media links, and more.</p>
+    <input type="password" id="pwdInput" placeholder="Enter password" autocomplete="current-password" />
+    <button class="btn-login" onclick="doLogin()">Login →</button>
+    <p class="login-error" id="pwdError">Wrong password. Please try again.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DASHBOARD
+═══════════════════════════════════════════ -->
+<div id="s-dash">
+  <header class="dash-header">
+    <div class="dash-logo">Asean<span>.</span> Admin</div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn-deploy" id="deployBtn" onclick="saveAndDeploy()">
+        🚀 Save &amp; Deploy
+      </button>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="dash-content">
+
+    <!-- PROGRESS / CHECKLIST -->
+    <div class="progress-card">
+      <h3>Website Completion Checklist</h3>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="pFill" style="width:0%"></div>
+      </div>
+      <p class="progress-text" id="pText">Loading…</p>
+      <div class="checklist" id="checklist">
+        <div style="color:var(--gray);font-size:0.85rem;padding:8px;">Loading your data…</div>
+      </div>
+    </div>
+
+    <!-- GALLERY SECTION -->
+    <div class="section-card">
+      <h2><span class="section-icon">📸</span>Gallery Photos &amp; Videos</h2>
+      <p>Upload real photos and videos of your plant, products, and events. They will appear in the "See Our Quality In Action" gallery on the website. Each photo should be clear and under 5MB. Videos under 25MB.</p>
+      <div class="gallery-upload-grid" id="galleryGrid">
+        <div style="color:var(--gray);font-size:0.85rem;padding:8px;">Loading…</div>
+      </div>
+    </div>
+
+    <!-- SOCIAL MEDIA -->
+    <div class="section-card">
+      <h2><span class="section-icon">📱</span>Social Media Links</h2>
+      <p>Paste the full link to each of your social media pages. Leave blank if you don't have an account yet.</p>
+
+      <div class="field">
+        <label>Instagram</label>
+        <input type="url" id="f-ig" placeholder="https://www.instagram.com/aseanwater" />
+      </div>
+      <div class="field">
+        <label>Facebook</label>
+        <input type="url" id="f-fb" placeholder="https://www.facebook.com/aseanwater" />
+      </div>
+      <div class="field">
+        <label>YouTube</label>
+        <input type="url" id="f-yt" placeholder="https://www.youtube.com/@aseanwater" />
+      </div>
+      <div class="field">
+        <label>Twitter / X</label>
+        <input type="url" id="f-tw" placeholder="https://twitter.com/aseanwater" />
+      </div>
+    </div>
+
+    <!-- GOOGLE MAPS -->
+    <div class="section-card">
+      <h2><span class="section-icon">🗺️</span>Google Maps Location</h2>
+
+      <div class="map-steps">
+        <p>How to get the map code (do this once):</p>
+        <ol>
+          <li>Open <strong>Google Maps</strong> on your phone or computer</li>
+          <li>Search for your plant: <em>Ankampalem, Atreyapuram</em></li>
+          <li>Tap <strong>Share</strong> → <strong>Embed a map</strong></li>
+          <li>Copy the code that starts with <code>&lt;iframe</code></li>
+          <li>Paste it in the box below</li>
+        </ol>
+      </div>
+
+      <div class="field">
+        <label>Google Maps Embed Code</label>
+        <textarea id="f-map" placeholder='Paste the &lt;iframe src="..."&gt;&lt;/iframe&gt; code here'></textarea>
+        <p class="hint">The code looks like: &lt;iframe src="https://www.google.com/maps/embed?..."&gt;&lt;/iframe&gt;</p>
+      </div>
+    </div>
+
+    <!-- CERTIFICATIONS -->
+    <div class="section-card">
+      <h2><span class="section-icon">✅</span>Certifications</h2>
+      <p>Enter your food safety license numbers. These will be shown on the website to build customer trust.</p>
+
+      <div class="field">
+        <label>FSSAI License Number</label>
+        <input type="text" id="f-fssai" placeholder="e.g. 12345678901234" />
+        <p class="hint">14-digit number found on your FSSAI certificate</p>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="section-card">
+      <h2><span class="section-icon">📊</span>Website Numbers</h2>
+      <p>Update the numbers shown in the hero section of your website.</p>
+
+      <div class="field">
+        <label>Happy Customers count</label>
+        <input type="text" id="f-customers" placeholder="e.g. 500+" />
+      </div>
+    </div>
+
+  </div><!-- /dash-content -->
+
+  <!-- FIXED SAVE FOOTER -->
+  <div class="save-footer">
+    <button class="btn-deploy" id="deployBtn2" onclick="saveAndDeploy()">🚀 Save &amp; Deploy</button>
+    <p>Your website updates automatically in about 60 seconds after saving</p>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   CONFIG — do not share this file publicly
+═══════════════════════════════════════════════════ */
+const REPO_OWNER = 'Subhodaya-Racharla';
+const REPO_NAME  = 'asean-water';
+const BRANCH     = 'main';
+
+// Token is XOR-encrypted with the admin password — safe to store here
+const _ENC = 'BhoRCRsibUBTQT5CVCM5Gn94dmRRARQZJAd1f2NvEhkcPj41YQJnfQoaEwIfLmF0QgVXNQ8nNhZEAF1mVEBUDVsyc3xkbQ44UwIJN3l2Bnk3PDEiOnkGQgpYOR0v';
+
+function decryptToken(password) {
+  const enc = atob(_ENC);
+  let out = '';
+  for (let i = 0; i < enc.length; i++) {
+    out += String.fromCharCode(enc.charCodeAt(i) ^ password.charCodeAt(i % password.length));
+  }
+  return out;
+}
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+let _token   = null;
+let _data    = null;
+let _shas    = {};            // GitHub file SHAs
+let _pending = {};            // { id: { base64, filename, mimeType } }
+
+const CHECKLIST = [
+  { key: 'g1',   label: 'Plant Photo — Manufacturing Unit',   check: d => !!d.gallery.find(g => g.id === 'g1')?.src  },
+  { key: 'g2',   label: 'Plant Photo — Quality Testing',      check: d => !!d.gallery.find(g => g.id === 'g2')?.src  },
+  { key: 'g3',   label: 'Photo — Wedding Custom Bottles',     check: d => !!d.gallery.find(g => g.id === 'g3')?.src  },
+  { key: 'g4',   label: 'Video — Packaging Line',             check: d => !!d.gallery.find(g => g.id === 'g4')?.src  },
+  { key: 'g5',   label: 'Photo — 20L Bulk Cans',              check: d => !!d.gallery.find(g => g.id === 'g5')?.src  },
+  { key: 'g6',   label: 'Plant Photo — Label Printing Unit',  check: d => !!d.gallery.find(g => g.id === 'g6')?.src  },
+  { key: 'g7',   label: 'Video — Quality Assurance',          check: d => !!d.gallery.find(g => g.id === 'g7')?.src  },
+  { key: 'g8',   label: 'Photo — Corporate / Bulk Orders',    check: d => !!d.gallery.find(g => g.id === 'g8')?.src  },
+  { key: 'g9',   label: 'Photo — Alkaline Water',             check: d => !!d.gallery.find(g => g.id === 'g9')?.src  },
+  { key: 'g10',  label: 'Photo — Birthday / Event Bottles',   check: d => !!d.gallery.find(g => g.id === 'g10')?.src },
+  { key: 'map',  label: 'Google Maps embed code',             check: d => !!d.mapEmbed                               },
+  { key: 'fssai',label: 'FSSAI License Number',               check: d => !!d.certifications?.fssai                 },
+  { key: 'ig',   label: 'Instagram page link',                check: d => d.social.instagram && d.social.instagram !== '#' },
+  { key: 'fb',   label: 'Facebook page link',                 check: d => d.social.facebook  && d.social.facebook  !== '#' },
+  { key: 'yt',   label: 'YouTube channel link',               check: d => d.social.youtube   && d.social.youtube   !== '#' },
+];
+
+/* ═══════════════════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════════════════ */
+function doLogin() {
+  const pwd = document.getElementById('pwdInput').value.trim();
+  // Verify by decrypting token — if token is valid GitHub prefix it's correct
+  const candidate = decryptToken(pwd);
+  if (candidate.startsWith('github_pat_')) {
+    _token = candidate;
+    localStorage.setItem('asean_auth_pwd', pwd);
+    document.getElementById('s-login').style.display = 'none';
+    document.getElementById('s-dash').style.display  = 'block';
+    loadData();
+  } else {
+    document.getElementById('pwdError').style.display = 'block';
+    document.getElementById('pwdInput').value = '';
+    document.getElementById('pwdInput').focus();
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('asean_auth_pwd');
+  _token = null; _data = null; _shas = {}; _pending = {};
+  document.getElementById('s-dash').style.display  = 'none';
+  document.getElementById('s-login').style.display = 'flex';
+  document.getElementById('pwdInput').value = '';
+}
+
+/* ═══════════════════════════════════════════════════
+   GITHUB API HELPERS
+═══════════════════════════════════════════════════ */
+const BASE = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents`;
+
+async function ghGet(path) {
+  return fetch(`${BASE}/${path}`, {
+    headers: { Authorization: `Bearer ${_token}`, Accept: 'application/vnd.github.v3+json' }
+  });
+}
+
+async function ghPut(path, textContent, sha) {
+  const body = {
+    message: `Admin update: ${path}`,
+    content: btoa(unescape(encodeURIComponent(textContent))),
+    branch: BRANCH
+  };
+  if (sha) body.sha = sha;
+  return fetch(`${BASE}/${path}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${_token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
+    body: JSON.stringify(body)
+  });
+}
+
+async function ghPutBinary(path, base64Content, sha) {
+  const body = { message: `Admin upload: ${path}`, content: base64Content, branch: BRANCH };
+  if (sha) body.sha = sha;
+  return fetch(`${BASE}/${path}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${_token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
+    body: JSON.stringify(body)
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   LOAD DATA FROM GITHUB
+═══════════════════════════════════════════════════ */
+async function loadData() {
+  try {
+    const res = await ghGet('data.json');
+    if (res.ok) {
+      const json = await res.json();
+      _shas['data.json'] = json.sha;
+      _data = JSON.parse(decodeURIComponent(escape(atob(json.content.replace(/\n/g, '')))));
+    } else {
+      _data = defaultData();
+    }
+  } catch(e) {
+    _data = defaultData();
+  }
+  renderDashboard();
+}
+
+/* ═══════════════════════════════════════════════════
+   RENDER DASHBOARD
+═══════════════════════════════════════════════════ */
+function renderDashboard() {
+  // Pre-fill form fields
+  const s = _data.social;
+  document.getElementById('f-ig').value        = (s.instagram && s.instagram !== '#') ? s.instagram : '';
+  document.getElementById('f-fb').value        = (s.facebook  && s.facebook  !== '#') ? s.facebook  : '';
+  document.getElementById('f-yt').value        = (s.youtube   && s.youtube   !== '#') ? s.youtube   : '';
+  document.getElementById('f-tw').value        = (s.twitter   && s.twitter   !== '#') ? s.twitter   : '';
+  document.getElementById('f-fssai').value     = _data.certifications?.fssai || '';
+  document.getElementById('f-map').value       = _data.mapEmbed || '';
+  document.getElementById('f-customers').value = _data.stats?.customers || '500+';
+
+  renderGalleryGrid();
+  updateChecklist();
+}
+
+/* ═══════════════════════════════════════════════════
+   GALLERY GRID
+═══════════════════════════════════════════════════ */
+function renderGalleryGrid() {
+  const grid = document.getElementById('galleryGrid');
+  grid.innerHTML = '';
+
+  _data.gallery.forEach(item => {
+    const hasMedia = !!item.src || !!_pending[item.id];
+    const isVideo  = item.type === 'video';
+    const accept   = isVideo ? 'video/*' : 'image/*';
+
+    let previewHTML;
+    if (_pending[item.id]) {
+      const url = _pending[item.id].dataUrl;
+      previewHTML = isVideo
+        ? `<video src="${url}" style="width:100%;height:100%;object-fit:cover;"></video>`
+        : `<img src="${url}" style="width:100%;height:100%;object-fit:cover;" alt="${item.caption}" />`;
+    } else if (item.src) {
+      const url = item.src + '?v=' + Date.now();
+      previewHTML = isVideo
+        ? `<video src="${url}" style="width:100%;height:100%;object-fit:cover;"></video>`
+        : `<img src="${url}" style="width:100%;height:100%;object-fit:cover;" alt="${item.caption}" onerror="this.parentElement.innerHTML='<div class=placeholder-thumb><span>${item.icon}</span><p>${item.label}</p></div>'" />`;
+    } else {
+      previewHTML = `<div class="placeholder-thumb"><span>${item.icon}</span><p>${item.label}</p></div>`;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'upload-card' + (hasMedia ? ' has-media' : '');
+    div.id = 'card-' + item.id;
+    div.innerHTML = `
+      <div class="upload-preview">${previewHTML}</div>
+      <div class="upload-card-body">
+        <div class="upload-caption">${item.caption}</div>
+        <div class="upload-sub">${item.sub}</div>
+        <label class="btn-upload ${hasMedia ? 'has-file' : ''}">
+          ${isVideo ? '🎥' : '📷'} ${hasMedia ? 'Replace' : 'Upload ' + (isVideo ? 'Video' : 'Photo')}
+          <input type="file" accept="${accept}" onchange="handleUpload('${item.id}', this)" />
+        </label>
+        ${hasMedia ? `<button class="btn-remove" onclick="removeMedia('${item.id}')">✕ Remove</button>` : ''}
+      </div>`;
+    grid.appendChild(div);
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   HANDLE FILE UPLOAD
+═══════════════════════════════════════════════════ */
+function handleUpload(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const isVideo  = file.type.startsWith('video/');
+  const maxBytes = isVideo ? 25 * 1024 * 1024 : 5 * 1024 * 1024;
+  if (file.size > maxBytes) {
+    toast(`File too large! Max ${isVideo ? '25MB for videos' : '5MB for photos'}. Please compress and try again.`, 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    const base64  = dataUrl.split(',')[1];
+    const ext     = file.name.split('.').pop().toLowerCase();
+
+    _pending[id] = { base64, dataUrl, filename: `${id}.${ext}`, mimeType: file.type };
+
+    updateChecklist();
+    renderGalleryGrid();
+    toast('Photo ready! Tap "Save & Deploy" to publish it to the website.', 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeMedia(id) {
+  delete _pending[id];
+  const item = _data.gallery.find(g => g.id === id);
+  if (item) item.src = '';
+  updateChecklist();
+  renderGalleryGrid();
+}
+
+/* ═══════════════════════════════════════════════════
+   CHECKLIST
+═══════════════════════════════════════════════════ */
+function buildLiveData() {
+  // Build a temporary data object with pending uploads factored in
+  const live = JSON.parse(JSON.stringify(_data));
+  Object.keys(_pending).forEach(id => {
+    const g = live.gallery.find(g => g.id === id);
+    if (g) g.src = _pending[id].dataUrl; // temp URL just for checklist check
+  });
+  live.social.instagram = document.getElementById('f-ig')?.value || live.social.instagram;
+  live.social.facebook  = document.getElementById('f-fb')?.value || live.social.facebook;
+  live.social.youtube   = document.getElementById('f-yt')?.value || live.social.youtube;
+  live.social.twitter   = document.getElementById('f-tw')?.value || live.social.twitter;
+  live.certifications   = { fssai: document.getElementById('f-fssai')?.value || '' };
+  live.mapEmbed         = document.getElementById('f-map')?.value || '';
+  return live;
+}
+
+function updateChecklist() {
+  const live = buildLiveData();
+  const container = document.getElementById('checklist');
+  container.innerHTML = '';
+
+  let done = 0;
+  CHECKLIST.forEach(item => {
+    const completed = item.check(live);
+    if (completed) done++;
+    const el = document.createElement('div');
+    el.className = `check-item ${completed ? 'done' : 'pending'}`;
+    el.innerHTML = `<span class="check-icon">${completed ? '✅' : '⬜'}</span>${item.label}`;
+    container.appendChild(el);
+  });
+
+  const pct = Math.round((done / CHECKLIST.length) * 100);
+  document.getElementById('pFill').style.width = pct + '%';
+  document.getElementById('pText').textContent = `${done} of ${CHECKLIST.length} items completed (${pct}%)`;
+}
+
+/* ═══════════════════════════════════════════════════
+   SAVE & DEPLOY
+═══════════════════════════════════════════════════ */
+async function saveAndDeploy() {
+  const btn  = document.getElementById('deployBtn');
+  const btn2 = document.getElementById('deployBtn2');
+  const setDisabled = (v) => { btn.disabled = btn2.disabled = v; };
+
+  setDisabled(true);
+  btn.innerHTML  = '<span class="spinner"></span> Saving…';
+  btn2.innerHTML = '<span class="spinner"></span> Saving…';
+  toast('Uploading changes… please wait', 'info');
+
+  try {
+    // ── 1. Upload each pending image/video to GitHub ──────────────
+    for (const [id, up] of Object.entries(_pending)) {
+      const path = `assets/gallery/${up.filename}`;
+
+      // Check if file already exists (need SHA to update it)
+      let sha = null;
+      try {
+        const existRes = await ghGet(path);
+        if (existRes.ok) {
+          const existJson = await existRes.json();
+          sha = existJson.sha;
+        }
+      } catch(_) {}
+
+      const uploadRes = await ghPutBinary(path, up.base64, sha);
+      if (uploadRes.ok) {
+        const idx = _data.gallery.findIndex(g => g.id === id);
+        if (idx > -1) _data.gallery[idx].src = `./assets/gallery/${up.filename}`;
+      } else {
+        const err = await uploadRes.json();
+        throw new Error(`Upload failed for ${up.filename}: ${err.message}`);
+      }
+    }
+
+    // ── 2. Collect form values into _data ─────────────────────────
+    _data.social.instagram        = document.getElementById('f-ig').value.trim()    || '#';
+    _data.social.facebook         = document.getElementById('f-fb').value.trim()    || '#';
+    _data.social.youtube          = document.getElementById('f-yt').value.trim()    || '#';
+    _data.social.twitter          = document.getElementById('f-tw').value.trim()    || '#';
+    _data.certifications          = { fssai: document.getElementById('f-fssai').value.trim() };
+    _data.mapEmbed                = document.getElementById('f-map').value.trim();
+    _data.stats.customers         = document.getElementById('f-customers').value.trim() || '500+';
+
+    // ── 3. Save data.json to GitHub ───────────────────────────────
+    const jsonStr  = JSON.stringify(_data, null, 2);
+    const saveRes  = await ghPut('data.json', jsonStr, _shas['data.json']);
+
+    if (!saveRes.ok) {
+      const err = await saveRes.json();
+      throw new Error(`Could not save data.json: ${err.message}`);
+    }
+
+    const saved = await saveRes.json();
+    _shas['data.json'] = saved.content.sha;
+    _pending = {};
+
+    updateChecklist();
+    renderGalleryGrid();
+    toast('✅ Saved! Your website will update in about 60 seconds.', 'success');
+
+  } catch(err) {
+    toast('❌ ' + err.message + ' — Check your internet and try again.', 'error');
+    console.error(err);
+  }
+
+  btn.innerHTML  = '🚀 Save &amp; Deploy';
+  btn2.innerHTML = '🚀 Save &amp; Deploy';
+  setDisabled(false);
+}
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+function toast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = `toast ${type}`;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+/* ═══════════════════════════════════════════════════
+   DEFAULT DATA
+═══════════════════════════════════════════════════ */
+function defaultData() {
+  return {
+    version: 1,
+    social: { instagram: '#', facebook: '#', youtube: '#', twitter: '#' },
+    certifications: { fssai: '' },
+    mapEmbed: '',
+    stats: { customers: '500+', products: '5+', purity: '100%' },
+    gallery: [
+      { id:'g1',  type:'image', src:'', caption:'Manufacturing Unit',    sub:'Ankampalem, Atreyapuram',    icon:'🏭', label:'Plant Photo 1'    },
+      { id:'g2',  type:'image', src:'', caption:'Quality Testing',        sub:'Multi-stage filtration',     icon:'🔬', label:'Plant Photo 2'    },
+      { id:'g3',  type:'image', src:'', caption:'Wedding Custom Bottles', sub:'Personalized labels',        icon:'💍', label:'Product Photo 1'  },
+      { id:'g4',  type:'video', src:'', caption:'Packaging Line',         sub:'See our process live',       icon:'🎥', label:'Video 1'          },
+      { id:'g5',  type:'image', src:'', caption:'20L Bulk Cans',          sub:'Ready for delivery',         icon:'🫙', label:'Product Photo 2'  },
+      { id:'g6',  type:'image', src:'', caption:'Label Printing Unit',    sub:'In-house custom labels',     icon:'🖨️', label:'Plant Photo 3'    },
+      { id:'g7',  type:'video', src:'', caption:'Quality Assurance',      sub:'Rigorous testing',           icon:'✅', label:'Video 2'          },
+      { id:'g8',  type:'image', src:'', caption:'Corporate Orders',       sub:'Bulk delivery done right',   icon:'🏢', label:'Product Photo 3'  },
+      { id:'g9',  type:'image', src:'', caption:'Alkaline Water',         sub:'pH-balanced for health',     icon:'⚡', label:'Product Photo 4'  },
+      { id:'g10', type:'image', src:'', caption:'Birthday Special',       sub:'Custom celebration bottles', icon:'🎂', label:'Product Photo 5'  }
+    ]
+  };
+}
+
+/* ═══════════════════════════════════════════════════
+   AUTO-UPDATE CHECKLIST ON FORM INPUT
+═══════════════════════════════════════════════════ */
+['f-ig','f-fb','f-yt','f-tw','f-fssai','f-map','f-customers'].forEach(id => {
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateChecklist);
+  });
+});
+
+/* ═══════════════════════════════════════════════════
+   INIT — auto-login if session saved
+═══════════════════════════════════════════════════ */
+window.addEventListener('load', () => {
+  document.getElementById('pwdInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  const saved = localStorage.getItem('asean_auth_pwd');
+  if (saved) {
+    const candidate = decryptToken(saved);
+    if (candidate.startsWith('github_pat_')) {
+      _token = candidate;
+      document.getElementById('s-login').style.display = 'none';
+      document.getElementById('s-dash').style.display  = 'block';
+      loadData();
+    }
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "social": {
+    "instagram": "#",
+    "facebook": "#",
+    "youtube": "#",
+    "twitter": "#"
+  },
+  "certifications": {
+    "fssai": ""
+  },
+  "mapEmbed": "",
+  "stats": {
+    "customers": "500+",
+    "products": "5+",
+    "purity": "100%"
+  },
+  "gallery": [
+    { "id": "g1",  "type": "image", "src": "", "caption": "Manufacturing Unit",     "sub": "Ankampalem, Atreyapuram",    "icon": "🏭", "label": "Plant Photo 1"    },
+    { "id": "g2",  "type": "image", "src": "", "caption": "Quality Testing",         "sub": "Multi-stage filtration",     "icon": "🔬", "label": "Plant Photo 2"    },
+    { "id": "g3",  "type": "image", "src": "", "caption": "Wedding Custom Bottles",  "sub": "Personalized labels",        "icon": "💍", "label": "Product Photo 1"  },
+    { "id": "g4",  "type": "video", "src": "", "caption": "Packaging Line",          "sub": "See our process live",       "icon": "🎥", "label": "Video 1"          },
+    { "id": "g5",  "type": "image", "src": "", "caption": "20L Bulk Cans",           "sub": "Ready for delivery",         "icon": "🫙", "label": "Product Photo 2"  },
+    { "id": "g6",  "type": "image", "src": "", "caption": "Label Printing Unit",     "sub": "In-house custom labels",     "icon": "🖨️", "label": "Plant Photo 3"    },
+    { "id": "g7",  "type": "video", "src": "", "caption": "Quality Assurance",       "sub": "Rigorous testing",           "icon": "✅", "label": "Video 2"          },
+    { "id": "g8",  "type": "image", "src": "", "caption": "Corporate Orders",        "sub": "Bulk delivery done right",   "icon": "🏢", "label": "Product Photo 3"  },
+    { "id": "g9",  "type": "image", "src": "", "caption": "Alkaline Water",          "sub": "pH-balanced for health",     "icon": "⚡", "label": "Product Photo 4"  },
+    { "id": "g10", "type": "image", "src": "", "caption": "Birthday Special",        "sub": "Custom celebration bottles", "icon": "🎂", "label": "Product Photo 5"  }
+  ]
+}
