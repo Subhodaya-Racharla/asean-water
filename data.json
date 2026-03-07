@@ -28,7 +28,7 @@
     {
       "id": "g2",
       "type": "image",
-      "src": "./assets/gallery/g2.jpg",
+      "src": "",
       "caption": "Quality Testing",
       "sub": "Multi-stage filtration",
       "icon": "🔬",
@@ -37,7 +37,7 @@
     {
       "id": "g3",
       "type": "image",
-      "src": "./assets/gallery/g3.jpg",
+      "src": "",
       "caption": "Wedding Custom Bottles",
       "sub": "Personalized labels",
       "icon": "💍",
