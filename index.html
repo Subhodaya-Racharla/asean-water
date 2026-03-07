@@ -2266,19 +2266,24 @@
   /* ---- Gallery: Drag to scroll ---- */
   const wrapper = document.getElementById('galleryWrapper');
   if (wrapper && track) {
-    let isDragging = false;
-    let startX = 0;
-    let scrollLeft = 0;
-
-    // We'll manage a manual offset on top of the CSS animation
-    let manualOffset = 0;
-    let animOffset   = 0;
+    let isDragging  = false;
+    let startX      = 0;
+    let offsetAtDragStart = 0;
+    let animOffset  = 0;          // continuous value, never clamped during drag
     let lastTimestamp = null;
-    const SPEED = 0.35; // px per ms — matches CSS 90s animation speed roughly
+    const SPEED = 0.12;           // px per ms — slow, relaxed auto-scroll
 
-    // Override the CSS animation with JS-controlled transform
+    // Override CSS animation with JS-driven transform
     track.style.animation = 'none';
     track.style.willChange = 'transform';
+
+    function getHalfWidth() { return track.scrollWidth / 2; }
+
+    // Normalize only at render time so left AND right drags both work smoothly
+    function normalize(val) {
+      const hw = getHalfWidth();
+      return ((val % hw) + hw) % hw;
+    }
 
     function animate(ts) {
       if (!isDragging) {
@@ -2286,14 +2291,10 @@
           animOffset += (ts - lastTimestamp) * SPEED;
         }
         lastTimestamp = ts;
-
-        // Reset at halfway to loop
-        const halfWidth = track.scrollWidth / 2;
-        if (animOffset >= halfWidth) animOffset -= halfWidth;
       } else {
         lastTimestamp = null;
       }
-      track.style.transform = `translateX(-${animOffset + manualOffset}px)`;
+      track.style.transform = `translateX(-${normalize(animOffset)}px)`;
       requestAnimationFrame(animate);
     }
     requestAnimationFrame(animate);
@@ -2305,22 +2306,21 @@
     wrapper.addEventListener('mousedown', e => {
       isDragging = true;
       startX = getClientX(e);
-      scrollLeft = animOffset;
+      offsetAtDragStart = animOffset;
       wrapper.classList.add('dragging');
     });
 
     wrapper.addEventListener('touchstart', e => {
       isDragging = true;
       startX = getClientX(e);
-      scrollLeft = animOffset;
+      offsetAtDragStart = animOffset;
     }, { passive: true });
 
     function onMove(e) {
       if (!isDragging) return;
       const dx = getClientX(e) - startX;
-      const newOffset = scrollLeft - dx;
-      const halfWidth = track.scrollWidth / 2;
-      animOffset = ((newOffset % halfWidth) + halfWidth) % halfWidth;
+      // drag left (+dx negative) → scroll forward; drag right → scroll back
+      animOffset = offsetAtDragStart - dx;
     }
 
     window.addEventListener('mousemove', onMove);
