@@ -253,7 +253,7 @@
     <!-- GALLERY SECTION -->
     <div class="section-card">
       <h2><span class="section-icon">📸</span>Gallery Photos &amp; Videos</h2>
-      <p>Upload real photos and videos of your plant, products, and events. They will appear in the "See Our Quality In Action" gallery on the website. Each photo should be clear and under 5MB. Videos under 25MB.</p>
+      <p>Upload real photos and videos of your plant, products, and events. They will appear in the "See Our Quality In Action" gallery on the website. Each photo should be clear and under 15MB. Videos under 50MB.</p>
       <div class="gallery-upload-grid" id="galleryGrid">
         <div style="color:var(--gray);font-size:0.85rem;padding:8px;">Loading…</div>
       </div>
@@ -540,9 +540,9 @@ function handleUpload(id, input) {
   if (!file) return;
 
   const isVideo  = file.type.startsWith('video/');
-  const maxBytes = isVideo ? 25 * 1024 * 1024 : 5 * 1024 * 1024;
+  const maxBytes = isVideo ? 50 * 1024 * 1024 : 15 * 1024 * 1024;
   if (file.size > maxBytes) {
-    toast(`File too large! Max ${isVideo ? '25MB for videos' : '5MB for photos'}. Please compress and try again.`, 'error');
+    toast(`File too large! Max ${isVideo ? '50MB for videos' : '15MB for photos'}. Please compress and try again.`, 'error');
     return;
   }
 
