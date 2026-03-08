@@ -533,32 +533,78 @@ function renderGalleryGrid() {
 }
 
 /* ═══════════════════════════════════════════════════
+   IMAGE COMPRESSION
+═══════════════════════════════════════════════════ */
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const TARGET = 10 * 1024 * 1024; // aim for under 10MB
+      let quality = 0.85, scale = 1;
+
+      function tryCompress() {
+        const canvas = document.createElement('canvas');
+        canvas.width  = Math.round(img.width  * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        const bytes   = Math.ceil(dataUrl.split(',')[1].length * 0.75);
+
+        if (bytes <= TARGET || (quality <= 0.4 && scale <= 0.4)) {
+          callback(dataUrl, dataUrl.split(',')[1]);
+        } else {
+          if (quality > 0.5) quality = +(quality - 0.1).toFixed(1);
+          else               scale   = +(scale   - 0.1).toFixed(1);
+          tryCompress();
+        }
+      }
+      tryCompress();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ═══════════════════════════════════════════════════
    HANDLE FILE UPLOAD
 ═══════════════════════════════════════════════════ */
 function handleUpload(id, input) {
   const file = input.files[0];
   if (!file) return;
 
-  const isVideo  = file.type.startsWith('video/');
-  const maxBytes = isVideo ? 50 * 1024 * 1024 : 15 * 1024 * 1024;
-  if (file.size > maxBytes) {
-    toast(`File too large! Max ${isVideo ? '50MB for videos' : '15MB for photos'}. Please compress and try again.`, 'error');
+  const isVideo = file.type.startsWith('video/');
+
+  // Videos: reject if over 100MB (can't compress in browser)
+  if (isVideo && file.size > 100 * 1024 * 1024) {
+    toast('Video too large! Max 100MB. Please trim or compress the video first.', 'error');
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    const base64  = dataUrl.split(',')[1];
-    const ext     = file.name.split('.').pop().toLowerCase();
+  if (isVideo) {
+    // Read video as-is
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const dataUrl = e.target.result;
+      const ext     = file.name.split('.').pop().toLowerCase();
+      _pending[id]  = { base64: dataUrl.split(',')[1], dataUrl, filename: `${id}.${ext}`, mimeType: file.type };
+      updateChecklist(); renderGalleryGrid();
+      toast('Video ready! Tap "Save & Deploy" to publish it to the website.', 'success');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    // Image: auto-compress if over 10MB
+    const needsCompress = file.size > 10 * 1024 * 1024;
+    if (needsCompress) toast('Photo is large — compressing automatically...', 'info');
 
-    _pending[id] = { base64, dataUrl, filename: `${id}.${ext}`, mimeType: file.type };
-
-    updateChecklist();
-    renderGalleryGrid();
-    toast('Photo ready! Tap "Save & Deploy" to publish it to the website.', 'success');
-  };
-  reader.readAsDataURL(file);
+    compressImage(file, function(dataUrl, base64) {
+      const ext    = file.name.split('.').pop().toLowerCase();
+      const outExt = needsCompress ? 'jpg' : ext; // compressed output is always JPEG
+      _pending[id] = { base64, dataUrl, filename: `${id}.${outExt}`, mimeType: 'image/jpeg' };
+      updateChecklist(); renderGalleryGrid();
+      toast(needsCompress ? 'Photo compressed & ready! Tap "Save & Deploy" to publish.' : 'Photo ready! Tap "Save & Deploy" to publish it to the website.', 'success');
+    });
+  }
 }
 
 function removeMedia(id) {
